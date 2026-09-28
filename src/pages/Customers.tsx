@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { UserPlus, Search, Phone, Users, ArrowLeft, Calendar, Camera, Frame, Receipt } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useLanguage } from '@/lib/i18n';
 import type { Customer, Bill, EventRecord, FrameOrder, Payment } from '@/lib/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useToast } from '@/components/Toast';
@@ -10,6 +11,7 @@ import { PaymentBadge, StatusBadge } from '@/components/StatusBadge';
 import { Avatar } from '@/components/Avatar';
 
 export function Customers() {
+  const { t } = useLanguage();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -34,7 +36,7 @@ export function Customers() {
 
   const handleAdd = async () => {
     if (!newName.trim()) {
-      show('Please enter the customer name.', 'error');
+      show(t('customers.enterName' as never), 'error');
       return;
     }
     const { error } = await supabase.from('customers').insert({
@@ -46,7 +48,7 @@ export function Customers() {
       show('Something went wrong. Please try again.', 'error');
       return;
     }
-    show('Customer added successfully');
+    show(t('customers.addedSuccess' as never));
     setShowAdd(false);
     setNewName('');
     setNewPhone('');
@@ -70,12 +72,12 @@ export function Customers() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="page-title">Customers</h1>
-          <p className="page-subtitle">Manage your customer relationships</p>
+          <h1 className="page-title">{t('customers.title' as never)}</h1>
+          <p className="page-subtitle">{t('customers.subtitle' as never)}</p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
           <UserPlus className="w-4 h-4" />
-          Add Customer
+          {t('customers.addCustomer' as never)}
         </button>
       </div>
 
@@ -95,12 +97,12 @@ export function Customers() {
         <div className="card">
           <EmptyState
             icon={<Users className="w-8 h-8" />}
-            title="No customers yet"
-            message="Add your first customer to start tracking their events and orders."
+            title={t('customers.noCustomers' as never)}
+            message={t('customers.noCustomersMsg' as never)}
             action={
               <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
                 <UserPlus className="w-4 h-4" />
-                Add Customer
+                {t('customers.addCustomer' as never)}
               </button>
             }
           />
@@ -125,13 +127,13 @@ export function Customers() {
         </div>
       )}
 
-      <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Add Customer" size="sm">
+      <Modal open={showAdd} onClose={() => setShowAdd(false)} title={t('customers.addCustomer' as never)} size="sm">
         <div className="space-y-4">
           <div>
             <label className="label">Name</label>
             <input
               className="input"
-              placeholder="Customer name"
+              placeholder={t('customers.customerName' as never)}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
             />
@@ -140,7 +142,7 @@ export function Customers() {
             <label className="label">Phone Number</label>
             <input
               className="input"
-              placeholder="Phone number"
+              placeholder={t('customers.customerPhone' as never)}
               value={newPhone}
               onChange={(e) => setNewPhone(e.target.value)}
             />
@@ -160,7 +162,7 @@ export function Customers() {
               Cancel
             </button>
             <button className="btn btn-primary flex-1" onClick={handleAdd}>
-              Add Customer
+              {t('customers.addCustomer' as never)}
             </button>
           </div>
         </div>

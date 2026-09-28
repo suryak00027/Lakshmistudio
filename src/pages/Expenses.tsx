@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Plus, Receipt, Trash2, TrendingDown, Calendar, Search } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useLanguage } from '@/lib/i18n';
 import type { Expense } from '@/lib/types';
 import { formatCurrency, formatDate, todayISO, currentMonthISO } from '@/lib/utils';
 import { EXPENSE_CATEGORIES, PAYMENT_METHODS } from '@/lib/constants';
@@ -32,6 +33,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export function Expenses() {
+  const { t } = useLanguage();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -109,11 +111,11 @@ export function Expenses() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="page-title">Expenses</h1>
-          <p className="page-subtitle">Keep track of daily business spending</p>
+          <h1 className="page-title">{t('expenses.title' as never)}</h1>
+          <p className="page-subtitle">{t('expenses.subtitle' as never)}</p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
-          <Plus className="w-4 h-4" /> Add Expense
+          <Plus className="w-4 h-4" /> {t('expenses.addExpense' as never)}
         </button>
       </div>
 
@@ -166,11 +168,11 @@ export function Expenses() {
         <div className="card">
           <EmptyState
             icon={<Receipt className="w-8 h-8" />}
-            title="No expenses recorded"
+            title={t('expenses.noExpenses' as never)}
             message="Start tracking your business expenses to see them here."
             action={
               <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
-                <Plus className="w-4 h-4" /> Add Expense
+                <Plus className="w-4 h-4" /> {t('expenses.addExpense' as never)}
               </button>
             }
           />
@@ -212,10 +214,10 @@ export function Expenses() {
       )}
 
       {showAdd && (
-        <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Add Expense" size="sm">
+        <Modal open={showAdd} onClose={() => setShowAdd(false)} title={t('expenses.addExpense' as never)} size="sm">
           <div className="space-y-4">
             <div>
-              <label className="label">Category</label>
+              <label className="label">{t('expenses.category' as never)}</label>
               <input
                 className="input"
                 value={category}
@@ -229,7 +231,7 @@ export function Expenses() {
               <p className="text-xs t-muted mt-1">You can type any custom category name.</p>
             </div>
             <div>
-              <label className="label">Description</label>
+              <label className="label">{t('expenses.description' as never)}</label>
               <input className="input" placeholder="What was this expense for?" value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
             <div>
@@ -237,19 +239,19 @@ export function Expenses() {
               <input type="number" min="0" className="input" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
             </div>
             <div>
-              <label className="label">Payment Method</label>
+              <label className="label">{t('expenses.paymentMethod' as never)}</label>
               <select className="input" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
                 {PAYMENT_METHODS.map((m) => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
             <div>
-              <label className="label">Date</label>
+              <label className="label">{t('expenses.expenseDate' as never)}</label>
               <input type="date" className="input" value={expenseDate} onChange={(e) => setExpenseDate(e.target.value)} />
             </div>
             <div className="flex gap-3">
               <button className="btn btn-secondary flex-1" onClick={() => setShowAdd(false)}>Cancel</button>
               <button className="btn btn-primary flex-1" onClick={handleAdd} disabled={saving}>
-                {saving ? 'Saving...' : 'Add Expense'}
+                {saving ? 'Saving...' : t('expenses.addExpense' as never)}
               </button>
             </div>
           </div>

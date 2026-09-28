@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Plus, Search, Frame, X, Phone, UserPlus, Trash2, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useLanguage } from '@/lib/i18n';
 import type { FrameOrder, Customer, Payment } from '@/lib/types';
 import { formatCurrency, formatDate, todayISO, generateOrderNumber } from '@/lib/utils';
 import { FRAME_ORDER_TYPES, FRAME_ORDER_STATUSES, PAYMENT_METHODS } from '@/lib/constants';
@@ -12,6 +13,7 @@ import { StatusBadge, PaymentBadge } from '@/components/StatusBadge';
 type TabKey = 'all' | 'New' | 'Processing' | 'Ready' | 'Delivered' | 'Cancelled';
 
 export function Frames() {
+  const { t } = useLanguage();
   const [orders, setOrders] = useState<FrameOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -51,11 +53,11 @@ export function Frames() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="page-title">Frames & Lamination</h1>
-          <p className="page-subtitle">Manage orders, delivery dates and balances</p>
+          <h1 className="page-title">{t('frames.title' as never)}</h1>
+          <p className="page-subtitle">{t('frames.subtitle' as never)}</p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowNew(true)}>
-          <Plus className="w-4 h-4" /> New Order
+          <Plus className="w-4 h-4" /> {t('frames.addOrder' as never)}
         </button>
       </div>
 
@@ -89,11 +91,11 @@ export function Frames() {
         <div className="card">
           <EmptyState
             icon={<Frame className="w-8 h-8" />}
-            title="No orders found"
+            title={t('frames.noOrders' as never)}
             message="Create your first frame or lamination order."
             action={
               <button className="btn btn-primary" onClick={() => setShowNew(true)}>
-                <Plus className="w-4 h-4" /> New Order
+                <Plus className="w-4 h-4" /> {t('frames.addOrder' as never)}
               </button>
             }
           />

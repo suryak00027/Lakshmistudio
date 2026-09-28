@@ -14,6 +14,7 @@ import {
   Users as UsersIcon,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useLanguage } from '@/lib/i18n';
 import type { EventRecord, EventStaff as EventStaffType, Staff, Customer, Payment, Settings } from '@/lib/types';
 import { formatCurrency, formatDate, todayISO } from '@/lib/utils';
 import { EVENT_TYPES, EVENT_SERVICES, EVENT_STATUSES, EVENT_STAFF_ROLES, PAYMENT_METHODS } from '@/lib/constants';
@@ -23,6 +24,7 @@ import { EmptyState, LoadingState, ConfirmDialog } from '@/components/Feedback';
 import { StatusBadge } from '@/components/StatusBadge';
 
 export function Events() {
+  const { t } = useLanguage();
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -83,12 +85,12 @@ export function Events() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="page-title">Events</h1>
-          <p className="page-subtitle">Bookings, availability and upcoming work</p>
+          <h1 className="page-title">{t('events.title' as never)}</h1>
+          <p className="page-subtitle">{t('events.subtitle' as never)}</p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowNew(true)}>
           <Plus className="w-4 h-4" />
-          New Event Booking
+          {t('events.addEvent' as never)}
         </button>
       </div>
 
@@ -148,12 +150,12 @@ export function Events() {
         <div className="card">
           <EmptyState
             icon={<Calendar className="w-8 h-8" />}
-            title="No events found"
+            title={t('events.noEvents' as never)}
             message="Create your first event booking to get started."
             action={
               <button className="btn btn-primary" onClick={() => setShowNew(true)}>
                 <Plus className="w-4 h-4" />
-                New Event
+                {t('events.addEvent' as never)}
               </button>
             }
           />
@@ -642,7 +644,7 @@ function NewEventForm({ onClose, onSaved }: { onClose: () => void; onSaved: () =
                     type="checkbox"
                     checked={selectedServices.includes(svc)}
                     onChange={() => toggleService(svc)}
-                    className="accent-gold-600"
+                    className="accent-brand-500"
                   />
                   <span className="text-sm">{svc}</span>
                 </label>

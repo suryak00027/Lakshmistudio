@@ -13,6 +13,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useLanguage } from '@/lib/i18n';
 import type { EventRecord, FrameOrder, Settings } from '@/lib/types';
 import { formatCurrency, formatDate, getGreeting, todayISO, currentMonthISO } from '@/lib/utils';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -31,6 +32,7 @@ interface Summary {
 }
 
 export function Dashboard({ onNavigate }: DashboardProps) {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<Summary>({ todaySales: 0, todayExpenses: 0, monthSales: 0, pending: 0 });
   const [todayEvents, setTodayEvents] = useState<EventRecord[]>([]);
@@ -109,7 +111,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
     <div className="space-y-6">
       <div className="animate-fade-in-up">
         <h1 className="page-title">{greeting} <span className="inline-block">👋</span></h1>
-        <p className="page-subtitle">Here's what's happening at LAKSHMI STUDIO today.</p>
+        <p className="page-subtitle">{t('dashboard.welcome' as never)}</p>
       </div>
 
       {/* Summary cards */}
@@ -136,7 +138,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           {/* Today's Events */}
           <div className="card p-5 animate-fade-in-up stagger-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="section-title">Today's Events</h2>
+              <h2 className="section-title">{t('dashboard.upcomingEvents' as never)}</h2>
               <button onClick={() => onNavigate('events')} className="text-sm text-accent hover:text-accent-light font-medium flex items-center gap-1 transition-colors">
                 View All <ArrowRight className="w-4 h-4" />
               </button>
@@ -166,7 +168,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           {/* Upcoming Events */}
           <div className="card p-5 animate-fade-in-up stagger-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="section-title">Upcoming Events</h2>
+              <h2 className="section-title">{t('dashboard.upcomingEvents' as never)}</h2>
               <button onClick={() => onNavigate('events')} className="text-sm text-accent hover:text-accent-light font-medium flex items-center gap-1 transition-colors">
                 View All <ArrowRight className="w-4 h-4" />
               </button>
@@ -218,7 +220,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
 
           {/* Quick Actions */}
           <div className="card p-5 animate-fade-in-up stagger-6">
-            <h2 className="section-title mb-4">Quick Actions</h2>
+            <h2 className="section-title mb-4">{t('dashboard.quickActions' as never)}</h2>
             <div className="space-y-2">
               {quickActions.map((action, idx) => {
                 const Icon = action.icon;

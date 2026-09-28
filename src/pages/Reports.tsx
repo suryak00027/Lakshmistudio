@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { BarChart3, TrendingUp, TrendingDown, Wallet, Calendar, Camera, Frame } from 'lucide-react';
+import { ChartBar as BarChart3, TrendingUp, TrendingDown, Wallet, Calendar, Camera, Frame } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useLanguage } from '@/lib/i18n';
 import { formatCurrency, formatDate, todayISO, currentMonthISO, monthName } from '@/lib/utils';
 import { LoadingState } from '@/components/Feedback';
 
@@ -20,6 +21,7 @@ interface ReportData {
 }
 
 export function Reports() {
+  const { t } = useLanguage();
   const [period, setPeriod] = useState<Period>('month');
   const [startDate, setStartDate] = useState(todayISO());
   const [endDate, setEndDate] = useState(todayISO());
@@ -113,8 +115,8 @@ export function Reports() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="page-title">Reports</h1>
-        <p className="page-subtitle">Simple business summary</p>
+        <h1 className="page-title">{t('reports.title' as never)}</h1>
+        <p className="page-subtitle">{t('reports.subtitle' as never)}</p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
@@ -144,7 +146,7 @@ export function Reports() {
         <LoadingState />
       ) : (
         <>
-          <div className="card p-6 bg-brand-500/5 border-sky-100">
+          <div className="card p-6 bg-brand-500/5 border-brand-200">
             <p className="text-sm t-muted">{reportTitle}</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
               <div>

@@ -16,7 +16,7 @@ export function useSettings() {
     fetch();
   }, [fetch]);
 
-  return { settings, loading, refetch: fetch };
+  return { settings, loading, refetch: fetch, refetchSettings: fetch };
 }
 
 export function useSupabaseQuery<T>(

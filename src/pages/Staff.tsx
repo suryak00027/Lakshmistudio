@@ -16,6 +16,7 @@ import { formatCurrency, formatDate, todayISO, currentMonthISO } from '@/lib/uti
 import { STAFF_ROLES, ATTENDANCE_STATUSES } from '@/lib/constants';
 import { uploadImage } from '@/lib/storage';
 import { useToast } from '@/components/Toast';
+import { useLanguage } from '@/lib/i18n';
 import { Modal } from '@/components/Modal';
 import { EmptyState, LoadingState, ConfirmDialog } from '@/components/Feedback';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -23,6 +24,7 @@ import { Avatar } from '@/components/Avatar';
 import { ImageCropper } from '@/components/ImageCropper';
 
 export function StaffPage() {
+  const { t } = useLanguage();
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -55,7 +57,7 @@ export function StaffPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      show('Image must be under 5MB.', 'error');
+      show(t('staff.photoUnder5mb'), 'error');
       return;
     }
     setRawPhotoFile(file);
@@ -69,39 +71,42 @@ export function StaffPage() {
 
   const handleAdd = async () => {
     if (!name.trim()) {
-      show('Please enter the staff name.', 'error');
+      show(t('staff.enterName'), 'error');
       return;
     }
     setSaving(true);
-    let photoUrl = '';
-    if (photoFile) {
-      const uploaded = await uploadImage(photoFile, 'staff');
-      if (uploaded) photoUrl = uploaded;
-    }
-    const { error } = await supabase.from('staff').insert({
-      name: name.trim(),
-      phone: phone.trim(),
-      role,
-      monthly_salary: parseFloat(salary) || 0,
-      notes: notes.trim(),
-      photo_url: photoUrl,
-    });
-    if (error) {
-      show('Something went wrong. Please try again.', 'error');
+    try {
+      let photoUrl = '';
+      if (photoFile) {
+        photoUrl = await uploadImage(photoFile, 'staff');
+      }
+      const { error } = await supabase.from('staff').insert({
+        name: name.trim(),
+        phone: phone.trim(),
+        role,
+        monthly_salary: parseFloat(salary) || 0,
+        notes: notes.trim(),
+        photo_url: photoUrl,
+      });
+      if (error) {
+        show(error.message, 'error');
+        return;
+      }
+      show(t('staff.addedSuccess'));
+      setShowAdd(false);
+      setName('');
+      setPhone('');
+      setRole('Photographer');
+      setSalary('');
+      setNotes('');
+      setPhotoFile(null);
+      setPhotoPreview(null);
+      fetchStaff();
+    } catch (error) {
+      show(error instanceof Error ? error.message : 'Unable to save staff member.', 'error');
+    } finally {
       setSaving(false);
-      return;
     }
-    show('Staff added successfully');
-    setShowAdd(false);
-    setName('');
-    setPhone('');
-    setRole('Photographer');
-    setSalary('');
-    setNotes('');
-    setPhotoFile(null);
-    setPhotoPreview(null);
-    setSaving(false);
-    fetchStaff();
   };
 
   if (selectedId) {
@@ -120,11 +125,11 @@ export function StaffPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="page-title">Staff</h1>
-          <p className="page-subtitle">Manage studio team, attendance and salary</p>
+          <h1 className="page-title">{t('staff.title')}</h1>
+          <p className="page-subtitle">{t('staff.subtitle')}</p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
-          <Plus className="w-4 h-4" /> Add Staff
+          <Plus className="w-4 h-4" /> {t('staff.addStaff')}
         </button>
       </div>
 
@@ -134,11 +139,11 @@ export function StaffPage() {
         <div className="card">
           <EmptyState
             icon={<UserCog className="w-8 h-8" />}
-            title="No staff yet"
-            message="Add your studio team members to manage attendance and salary."
+            title={t('staff.noStaff')}
+            message={t('staff.noStaffMsg')}
             action={
               <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
-                <Plus className="w-4 h-4" /> Add Staff
+                <Plus className="w-4 h-4" /> {t('staff.addStaff')}
               </button>
             }
           />
@@ -156,7 +161,7 @@ export function StaffPage() {
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold t-primary truncate">{member.name}</p>
                   <p className="text-sm text-brand-600 dark:text-brand-400">{member.role}</p>
-                  <p className="text-sm t-muted mt-1">{formatCurrency(Number(member.monthly_salary))}/mo</p>
+                  <p className="text-sm t-muted mt-1">{formatCurrency(Number(member.monthly_salary))}{t('staff.perMonth')}</p>
                 </div>
               </div>
               <div className="mt-3 pt-3 border-t border-default">
@@ -168,7 +173,7 @@ export function StaffPage() {
       )}
 
       {showAdd && (
-        <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Add Staff" size="md">
+        <Modal open={showAdd} onClose={() => setShowAdd(false)} title={t('staff.addStaff')} size="md">
           <div className="space-y-4">
             <div className="flex flex-col items-center gap-3">
               <div className="relative">
@@ -192,37 +197,43 @@ export function StaffPage() {
                   onClick={() => { setPhotoFile(null); setPhotoPreview(null); }}
                   className="text-xs t-muted hover:text-red-500"
                 >
-                  Remove photo
+                  {t('staff.removePhoto')}
                 </button>
               )}
             </div>
             <div>
-              <label className="label">Name</label>
-              <input className="input" placeholder="Staff name" value={name} onChange={(e) => setName(e.target.value)} />
+              <label className="label">{t('common.name')}</label>
+              <input className="input" placeholder={t('staff.namePlaceholder')} value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div>
-              <label className="label">Phone</label>
-              <input className="input" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} />
+              <label className="label">{t('common.phone')}</label>
+              <input className="input" placeholder={t('staff.phonePlaceholder')} value={phone} onChange={(e) => setPhone(e.target.value)} />
             </div>
             <div>
-              <label className="label">Role</label>
-              <input className="input" placeholder="Role" value={role} onChange={(e) => setRole(e.target.value)} list="staff-roles" />
-              <datalist id="staff-roles">
-                {STAFF_ROLES.map((r) => <option key={r} value={r} />)}
-              </datalist>
+              <label className="label" htmlFor="staff-role">{t('common.role')}</label>
+              <select
+                id="staff-role"
+                className="input"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                {STAFF_ROLES.map((staffRole) => (
+                  <option key={staffRole} value={staffRole}>{staffRole}</option>
+                ))}
+              </select>
             </div>
             <div>
-              <label className="label">Monthly Salary</label>
-              <input type="number" min="0" className="input" placeholder="0" value={salary} onChange={(e) => setSalary(e.target.value)} />
+              <label className="label">{t('staff.monthlySalary')}</label>
+              <input type="number" min="0" className="input" placeholder={t('staff.salaryPlaceholder')} value={salary} onChange={(e) => setSalary(e.target.value)} />
             </div>
             <div>
-              <label className="label">Notes</label>
-              <textarea className="input" rows={2} placeholder="Optional notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
+              <label className="label">{t('common.notes')}</label>
+              <textarea className="input" rows={2} placeholder={t('staff.notesPlaceholder')} value={notes} onChange={(e) => setNotes(e.target.value)} />
             </div>
             <div className="flex gap-3">
-              <button className="btn btn-secondary flex-1" onClick={() => setShowAdd(false)}>Cancel</button>
+              <button className="btn btn-secondary flex-1" onClick={() => setShowAdd(false)}>{t('common.cancel')}</button>
               <button className="btn btn-primary flex-1" onClick={handleAdd} disabled={saving}>
-                {saving ? 'Saving...' : 'Add Staff'}
+                {saving ? t('common.saving') : t('staff.addStaff')}
               </button>
             </div>
           </div>
@@ -232,7 +243,7 @@ export function StaffPage() {
       {rawPhotoFile && (
         <ImageCropper
           file={rawPhotoFile}
-          title="Crop Staff Photo"
+          title={t('staff.cropPhoto')}
           onCancel={() => setRawPhotoFile(null)}
           onConfirm={handlePhotoCropConfirm}
         />
@@ -242,6 +253,7 @@ export function StaffPage() {
 }
 
 function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void }) {
+  const { t } = useLanguage();
   const { show } = useToast();
   const [staff, setStaff] = useState<Staff | null>(null);
   const [loading, setLoading] = useState(true);
@@ -305,7 +317,7 @@ function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void
   const handleSalaryPayment = async () => {
     const amount = parseFloat(salAmount) || 0;
     if (amount <= 0) {
-      show('Please enter a valid amount.', 'error');
+      show(t('staff.enterValidAmount'), 'error');
       return;
     }
     await supabase.from('salary_records').insert({
@@ -315,7 +327,7 @@ function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void
       note: salNote,
       payment_date: todayISO(),
     });
-    show('Salary payment recorded');
+    show(t('staff.salaryPaymentRecorded'));
     setShowSalaryPayment(false);
     setSalAmount('');
     setSalNote('');
@@ -325,7 +337,7 @@ function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void
   const handleSalaryAdvance = async () => {
     const amount = parseFloat(advanceAmount) || 0;
     if (amount <= 0) {
-      show('Please enter a valid amount.', 'error');
+      show(t('staff.enterValidAmount'), 'error');
       return;
     }
     await supabase.from('salary_advances').insert({
@@ -334,7 +346,7 @@ function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void
       note: advanceNote,
       advance_date: todayISO(),
     });
-    show('Salary advance recorded');
+    show(t('staff.salaryAdvanceRecorded'));
     setShowSalaryAdvance(false);
     setAdvanceAmount('');
     setAdvanceNote('');
@@ -343,31 +355,40 @@ function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void
 
   const handleDelete = async () => {
     await supabase.from('staff').delete().eq('id', staffId);
-    show('Staff member removed');
+    show(t('staff.memberRemoved'));
     onBack();
   };
 
   if (loading) return <LoadingState />;
-  if (!staff) return <p className="t-muted">Staff member not found.</p>;
+  if (!staff) return <p className="t-muted">{t('staff.notFound')}</p>;
 
   const [year, month] = attendanceMonth.split('-').map(Number);
   const daysInMonth = new Date(year, month, 0).getDate();
   const today = todayISO();
 
+  const attendanceLabels: Record<string, string> = {
+    P: t('staff.present'),
+    A: t('staff.absent'),
+    L: t('staff.leave'),
+    E: t('staff.eventDuty'),
+  };
+
   const summary = ATTENDANCE_STATUSES.map((s) => ({
     ...s,
+    label: attendanceLabels[s.key] || s.label,
     count: attendance.filter((a) => a.status === s.key).length,
   }));
 
   const totalPaid = salaryRecords.reduce((s, r) => s + Number(r.amount), 0);
   const totalAdvance = salaryAdvances.reduce((s, a) => s + Number(a.amount), 0);
-  const salary = Number(staff.monthly_salary);
-  const remaining = salary + totalAdvance - totalPaid;
+  const monthlySalary = Number(staff.monthly_salary);
+  const netPayable = monthlySalary - totalAdvance;
+  const remaining = netPayable - totalPaid;
 
   return (
     <div className="space-y-6">
       <button onClick={onBack} className="flex items-center gap-2 text-sm t-muted hover:t-secondary">
-        <ArrowLeft className="w-4 h-4" /> Back to Staff
+        <ArrowLeft className="w-4 h-4" /> {t('staff.backToStaff')}
       </button>
 
       <div className="card p-6">
@@ -387,15 +408,15 @@ function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void
       </div>
 
       <div className="flex gap-1 bg-surface rounded-lg border border-default p-1">
-        {(['overview', 'attendance', 'salary'] as const).map((t) => (
+        {(['overview', 'attendance', 'salary'] as const).map((tabKey) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors capitalize ${
-              tab === t ? 'bg-gradient-brand text-white shadow-sm' : 't-muted hover:bg-surface-subtle'
+            key={tabKey}
+            onClick={() => setTab(tabKey)}
+            className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              tab === tabKey ? 'bg-gradient-brand text-white shadow-sm' : 't-muted hover:bg-surface-subtle'
             }`}
           >
-            {t}
+            {tabKey === 'overview' ? t('staff.overview') : tabKey === 'attendance' ? t('staff.attendance') : t('staff.salaryTab')}
           </button>
         ))}
       </div>
@@ -403,15 +424,15 @@ function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void
       {tab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="card p-5">
-            <h2 className="section-title mb-4">Profile</h2>
+            <h2 className="section-title mb-4">{t('staff.profile')}</h2>
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between"><span className="t-muted">Role</span><span className="t-secondary font-medium">{staff.role}</span></div>
-              <div className="flex justify-between"><span className="t-muted">Monthly Salary</span><span className="t-secondary font-medium">{formatCurrency(salary)}</span></div>
-              <div className="flex justify-between"><span className="t-muted">Phone</span><span className="t-secondary font-medium">{staff.phone || '—'}</span></div>
+              <div className="flex justify-between"><span className="t-muted">{t('common.role')}</span><span className="t-secondary font-medium">{staff.role}</span></div>
+              <div className="flex justify-between"><span className="t-muted">{t('staff.monthlySalary')}</span><span className="t-secondary font-medium">{formatCurrency(monthlySalary)}</span></div>
+              <div className="flex justify-between"><span className="t-muted">{t('common.phone')}</span><span className="t-secondary font-medium">{staff.phone || '—'}</span></div>
             </div>
             {staff.notes && (
               <div className="mt-4 pt-4 border-t border-default">
-                <p className="text-sm t-muted mb-1">Notes</p>
+                <p className="text-sm t-muted mb-1">{t('common.notes')}</p>
                 <p className="text-sm t-secondary">{staff.notes}</p>
               </div>
             )}
@@ -419,10 +440,10 @@ function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void
 
           <div className="card p-5">
             <h2 className="section-title flex items-center gap-2 mb-4">
-              <Calendar className="w-5 h-5 text-brand-600 dark:text-brand-400" /> Event Assignments
+              <Calendar className="w-5 h-5 text-brand-600 dark:text-brand-400" /> {t('staff.eventAssignments')}
             </h2>
             {assignments.length === 0 ? (
-              <p className="text-sm t-muted py-4 text-center">No event assignments.</p>
+              <p className="text-sm t-muted py-4 text-center">{t('staff.noAssignments')}</p>
             ) : (
               <div className="space-y-3">
                 {assignments.map((as) => (
@@ -463,7 +484,7 @@ function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-default">
-                  <th className="text-left py-2 px-2 t-muted font-medium">Date</th>
+                  <th className="text-left py-2 px-2 t-muted font-medium">{t('common.date')}</th>
                   {ATTENDANCE_STATUSES.map((s) => (
                     <th key={s.key} className="py-2 px-2 t-muted font-medium text-center">{s.key}</th>
                   ))}
@@ -488,7 +509,7 @@ function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void
                                 ? s.color === 'success' ? 'bg-green-500 text-white'
                                   : s.color === 'error' ? 'bg-red-500 text-white'
                                   : s.color === 'warning' ? 'bg-amber-500 text-white'
-                                  : 'bg-brand-500/100 text-white'
+                                  : 'bg-brand-500 text-white'
                                 : 'bg-surface-subtle t-faint hover:bg-surface-subtle'
                             } ${isFuture ? 'opacity-30 cursor-not-allowed' : ''}`}
                           >
@@ -508,40 +529,41 @@ function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void
       {tab === 'salary' && (
         <div className="space-y-4">
           <div className="card p-5">
-            <h2 className="section-title mb-4">Salary Summary</h2>
+            <h2 className="section-title mb-4">{t('staff.salarySummary')}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
               <div className="p-3 bg-surface-subtle rounded-lg">
-                <p className="t-muted">Salary</p>
-                <p className="text-lg font-bold t-primary mt-1">{formatCurrency(salary)}</p>
+                <p className="t-muted">{t('common.salary')}</p>
+                <p className="text-lg font-bold t-primary mt-1">{formatCurrency(monthlySalary)}</p>
               </div>
               <div className="p-3 bg-surface-subtle rounded-lg">
-                <p className="t-muted">Advances</p>
+                <p className="t-muted">{t('staff.advances')}</p>
                 <p className="text-lg font-bold text-amber-600 dark:text-amber-400 mt-1">{formatCurrency(totalAdvance)}</p>
               </div>
               <div className="p-3 bg-surface-subtle rounded-lg">
-                <p className="t-muted">Paid</p>
-                <p className="text-lg font-bold text-green-600 dark:text-green-400 mt-1">{formatCurrency(totalPaid)}</p>
+                <p className="t-muted">{t('staff.netPayable')}</p>
+                <p className="text-lg font-bold text-brand-600 dark:text-brand-400 mt-1">{formatCurrency(netPayable)}</p>
               </div>
               <div className="p-3 bg-surface-subtle rounded-lg">
-                <p className="t-muted">Remaining</p>
-                <p className="text-lg font-bold t-primary mt-1">{formatCurrency(remaining)}</p>
+                <p className="t-muted">{t('staff.remaining')}</p>
+                <p className={`text-lg font-bold mt-1 ${remaining > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>{formatCurrency(remaining)}</p>
               </div>
             </div>
+            <p className="text-xs t-muted mt-3">{t('staff.advanceDeductionNote')}</p>
             <div className="flex gap-3 mt-4">
               <button className="btn btn-primary flex-1" onClick={() => setShowSalaryPayment(true)}>
-                <Wallet className="w-4 h-4" /> Salary Payment
+                <Wallet className="w-4 h-4" /> {t('staff.salaryPayment')}
               </button>
               <button className="btn btn-secondary flex-1" onClick={() => setShowSalaryAdvance(true)}>
-                <TrendingUp className="w-4 h-4" /> Salary Advance
+                <TrendingUp className="w-4 h-4" /> {t('staff.salaryAdvance')}
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="card p-5">
-              <h2 className="section-title mb-4">Payment History</h2>
+              <h2 className="section-title mb-4">{t('staff.paymentHistory')}</h2>
               {salaryRecords.length === 0 ? (
-                <p className="text-sm t-muted py-4 text-center">No payments recorded.</p>
+                <p className="text-sm t-muted py-4 text-center">{t('staff.noPayments')}</p>
               ) : (
                 <div className="space-y-2">
                   {salaryRecords.map((r) => (
@@ -558,9 +580,9 @@ function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void
             </div>
 
             <div className="card p-5">
-              <h2 className="section-title mb-4">Advance History</h2>
+              <h2 className="section-title mb-4">{t('staff.advanceHistory')}</h2>
               {salaryAdvances.length === 0 ? (
-                <p className="text-sm t-muted py-4 text-center">No advances recorded.</p>
+                <p className="text-sm t-muted py-4 text-center">{t('staff.noAdvances')}</p>
               ) : (
                 <div className="space-y-2">
                   {salaryAdvances.map((a) => (
@@ -581,43 +603,43 @@ function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void
 
       <div className="flex justify-end">
         <button className="btn btn-danger" onClick={() => setConfirmDelete(true)}>
-          <Trash2 className="w-4 h-4" /> Remove Staff
+          <Trash2 className="w-4 h-4" /> {t('staff.removeStaff')}
         </button>
       </div>
 
       {showSalaryPayment && (
-        <Modal open={showSalaryPayment} onClose={() => setShowSalaryPayment(false)} title="Record Salary Payment" size="sm">
+        <Modal open={showSalaryPayment} onClose={() => setShowSalaryPayment(false)} title={t('staff.recordSalaryPayment')} size="sm">
           <div className="space-y-4">
             <div>
-              <label className="label">Amount</label>
+              <label className="label">{t('common.amount')}</label>
               <input type="number" min="0" className="input" placeholder="0" value={salAmount} onChange={(e) => setSalAmount(e.target.value)} />
             </div>
             <div>
-              <label className="label">Note</label>
-              <input className="input" placeholder="Optional note" value={salNote} onChange={(e) => setSalNote(e.target.value)} />
+              <label className="label">{t('common.notes')}</label>
+              <input className="input" placeholder={t('common.optional')} value={salNote} onChange={(e) => setSalNote(e.target.value)} />
             </div>
             <div className="flex gap-3">
-              <button className="btn btn-secondary flex-1" onClick={() => setShowSalaryPayment(false)}>Cancel</button>
-              <button className="btn btn-primary flex-1" onClick={handleSalaryPayment}>Save</button>
+              <button className="btn btn-secondary flex-1" onClick={() => setShowSalaryPayment(false)}>{t('common.cancel')}</button>
+              <button className="btn btn-primary flex-1" onClick={handleSalaryPayment}>{t('common.save')}</button>
             </div>
           </div>
         </Modal>
       )}
 
       {showSalaryAdvance && (
-        <Modal open={showSalaryAdvance} onClose={() => setShowSalaryAdvance(false)} title="Record Salary Advance" size="sm">
+        <Modal open={showSalaryAdvance} onClose={() => setShowSalaryAdvance(false)} title={t('staff.recordSalaryAdvance')} size="sm">
           <div className="space-y-4">
             <div>
-              <label className="label">Amount</label>
+              <label className="label">{t('common.amount')}</label>
               <input type="number" min="0" className="input" placeholder="0" value={advanceAmount} onChange={(e) => setAdvanceAmount(e.target.value)} />
             </div>
             <div>
-              <label className="label">Note</label>
-              <input className="input" placeholder="Optional note" value={advanceNote} onChange={(e) => setAdvanceNote(e.target.value)} />
+              <label className="label">{t('common.notes')}</label>
+              <input className="input" placeholder={t('common.optional')} value={advanceNote} onChange={(e) => setAdvanceNote(e.target.value)} />
             </div>
             <div className="flex gap-3">
-              <button className="btn btn-secondary flex-1" onClick={() => setShowSalaryAdvance(false)}>Cancel</button>
-              <button className="btn btn-primary flex-1" onClick={handleSalaryAdvance}>Save</button>
+              <button className="btn btn-secondary flex-1" onClick={() => setShowSalaryAdvance(false)}>{t('common.cancel')}</button>
+              <button className="btn btn-primary flex-1" onClick={handleSalaryAdvance}>{t('common.save')}</button>
             </div>
           </div>
         </Modal>
@@ -625,9 +647,9 @@ function StaffProfile({ staffId, onBack }: { staffId: string; onBack: () => void
 
       <ConfirmDialog
         open={confirmDelete}
-        title="Remove Staff"
-        message={`Are you sure you want to remove ${staff.name}? This cannot be undone.`}
-        confirmLabel="Remove"
+        title={t('staff.removeStaff')}
+        message={`${t('staff.removeConfirm')} ${staff.name}? ${t('staff.cannotUndo')}`}
+        confirmLabel={t('common.remove')}
         danger
         onCancel={() => setConfirmDelete(false)}
         onConfirm={handleDelete}

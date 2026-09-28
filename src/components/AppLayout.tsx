@@ -1,9 +1,12 @@
-import { useState, type ReactNode } from 'react';
-import { Menu, Phone, Sun, Moon } from 'lucide-react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import { Menu, Phone, Sun, Moon, Languages } from 'lucide-react';
 import { Sidebar, type PageKey } from './Sidebar';
 import { useSettings } from '@/lib/hooks';
 import { useTheme } from '@/lib/theme';
+import { useLanguage } from '@/lib/i18n';
 import { StudioLogo } from '@/components/Avatar';
+import { supabase } from '@/lib/supabase';
+import type { Settings } from '@/lib/types';
 
 interface AppLayoutProps {
   current: PageKey;
@@ -13,8 +16,27 @@ interface AppLayoutProps {
 
 export function AppLayout({ current, onNavigate, children }: AppLayoutProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { settings } = useSettings();
+  const { settings: hookSettings, refetchSettings } = useSettings();
+  const [localSettings, setLocalSettings] = useState<Settings | null>(null);
   const { theme, toggle } = useTheme();
+  const { lang, toggle: toggleLang } = useLanguage();
+
+  const fetchLocalSettings = useCallback(async () => {
+    const { data } = await supabase.from('settings').select('*').limit(1).maybeSingle();
+    setLocalSettings(data as Settings | null);
+  }, []);
+
+  useEffect(() => {
+    fetchLocalSettings();
+    const handler = () => {
+      fetchLocalSettings();
+      refetchSettings();
+    };
+    window.addEventListener('settings-updated', handler);
+    return () => window.removeEventListener('settings-updated', handler);
+  }, [fetchLocalSettings, refetchSettings]);
+
+  const settings = localSettings || hookSettings;
 
   return (
     <div className="flex min-h-screen transition-colors duration-300" style={{ backgroundColor: 'var(--bg-app)' }}>
@@ -37,6 +59,9 @@ export function AppLayout({ current, onNavigate, children }: AppLayoutProps) {
               <span className="text-xs t-muted ml-2">{settings?.tagline || 'since 1999'}</span>
             </div>
           </div>
+          <button onClick={toggleLang} className="t-muted hover:t-secondary transition-colors" title="Language">
+            <Languages className="w-5 h-5" />
+          </button>
           <button onClick={toggle} className="t-muted hover:t-secondary transition-colors">
             {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
           </button>
@@ -61,6 +86,13 @@ export function AppLayout({ current, onNavigate, children }: AppLayoutProps) {
             )}
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={toggleLang}
+              className="w-9 h-9 rounded-lg flex items-center justify-center t-muted hover:t-primary hover:bg-surface-subtle transition-all duration-200 active:scale-90"
+              title={lang === 'en' ? 'தமிழ்' : 'English'}
+            >
+              <Languages className="w-5 h-5" />
+            </button>
             <button
               onClick={toggle}
               className="w-9 h-9 rounded-lg flex items-center justify-center t-muted hover:t-primary hover:bg-surface-subtle transition-all duration-200 active:scale-90"

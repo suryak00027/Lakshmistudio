@@ -12,6 +12,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useLanguage } from '@/lib/i18n';
 import type { Bill, BillItem, Customer, Service, Settings } from '@/lib/types';
 import { formatCurrency, formatDate, todayISO, generateBillNumber } from '@/lib/utils';
 import { PAYMENT_METHODS } from '@/lib/constants';
@@ -23,6 +24,7 @@ import { PaymentBadge } from '@/components/StatusBadge';
 type FilterKey = 'today' | 'week' | 'month';
 
 export function Studio() {
+  const { t } = useLanguage();
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -72,12 +74,12 @@ export function Studio() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="page-title">Studio</h1>
-          <p className="page-subtitle">Quick photography services & billing</p>
+          <h1 className="page-title">{t('studio.title' as never)}</h1>
+          <p className="page-subtitle">{t('studio.subtitle' as never)}</p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowNewBill(true)}>
           <Plus className="w-4 h-4" />
-          New Bill
+          {t('studio.newBill' as never)}
         </button>
       </div>
 
@@ -119,7 +121,7 @@ export function Studio() {
             action={
               <button className="btn btn-primary" onClick={() => setShowNewBill(true)}>
                 <Plus className="w-4 h-4" />
-                New Bill
+                {t('studio.newBill' as never)}
               </button>
             }
           />

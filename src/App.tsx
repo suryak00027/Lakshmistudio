@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ToastProvider } from '@/components/Toast';
+import { LanguageProvider } from '@/lib/i18n';
 import { AppLayout } from '@/components/AppLayout';
 import type { PageKey } from '@/components/Sidebar';
 import { Dashboard } from '@/pages/Dashboard';
@@ -42,9 +43,11 @@ function App() {
 
   return (
     <ToastProvider>
-      <AppLayout current={page} onNavigate={setPage}>
-        {renderPage()}
-      </AppLayout>
+      <LanguageProvider>
+        <AppLayout current={page} onNavigate={setPage}>
+          {renderPage()}
+        </AppLayout>
+      </LanguageProvider>
     </ToastProvider>
   );
 }

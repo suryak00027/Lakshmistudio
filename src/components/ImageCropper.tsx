@@ -282,7 +282,7 @@ export function ImageCropper({
                       width: `${crop.w}px`,
                       height: `${crop.h}px`,
                       boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.55)',
-                      border: '2px solid #2DD4BF',
+                      border: '2px solid #E0701A',
                       borderRadius: '4px',
                     }}
                   >
@@ -297,25 +297,25 @@ export function ImageCropper({
                       onMouseDown={startDrag('resize-nw')}
                       onTouchStart={startDrag('resize-nw')}
                       className="absolute -top-1.5 -left-1.5 w-4 h-4 bg-white rounded-sm cursor-nwse-resize shadow"
-                      style={{ border: '2px solid #14B8A6' }}
+                      style={{ border: '2px solid #B45309' }}
                     />
                     <div
                       onMouseDown={startDrag('resize-ne')}
                       onTouchStart={startDrag('resize-ne')}
                       className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-white rounded-sm cursor-nesw-resize shadow"
-                      style={{ border: '2px solid #14B8A6' }}
+                      style={{ border: '2px solid #B45309' }}
                     />
                     <div
                       onMouseDown={startDrag('resize-sw')}
                       onTouchStart={startDrag('resize-sw')}
                       className="absolute -bottom-1.5 -left-1.5 w-4 h-4 bg-white rounded-sm cursor-nesw-resize shadow"
-                      style={{ border: '2px solid #14B8A6' }}
+                      style={{ border: '2px solid #B45309' }}
                     />
                     <div
                       onMouseDown={startDrag('resize-se')}
                       onTouchStart={startDrag('resize-se')}
                       className="absolute -bottom-1.5 -right-1.5 w-4 h-4 bg-white rounded-sm cursor-nwse-resize shadow"
-                      style={{ border: '2px solid #14B8A6' }}
+                      style={{ border: '2px solid #B45309' }}
                     />
 
                     {/* Move area */}

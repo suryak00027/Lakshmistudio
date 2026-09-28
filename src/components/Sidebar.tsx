@@ -12,11 +12,13 @@ import {
   X,
   Sun,
   Moon,
+  Languages,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { StudioLogo } from '@/components/Avatar';
 import { useTheme } from '@/lib/theme';
+import { useLanguage } from '@/lib/i18n';
 import type { Settings } from '@/lib/types';
 
 export type PageKey =
@@ -32,26 +34,26 @@ export type PageKey =
 
 interface NavItem {
   key: PageKey;
-  label: string;
+  labelKey: string;
   icon: typeof LayoutDashboard;
 }
 
 const mainNav: NavItem[] = [
-  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { key: 'studio', label: 'Studio', icon: Camera },
-  { key: 'events', label: 'Events', icon: Calendar },
-  { key: 'frames', label: 'Frames & Lamination', icon: Frame },
-  { key: 'customers', label: 'Customers', icon: Users },
+  { key: 'dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
+  { key: 'studio', labelKey: 'nav.studio', icon: Camera },
+  { key: 'events', labelKey: 'nav.events', icon: Calendar },
+  { key: 'frames', labelKey: 'nav.frames', icon: Frame },
+  { key: 'customers', labelKey: 'nav.customers', icon: Users },
 ];
 
 const managementNav: NavItem[] = [
-  { key: 'staff', label: 'Staff', icon: UserCog },
-  { key: 'expenses', label: 'Expenses', icon: Receipt },
-  { key: 'reports', label: 'Reports', icon: BarChart3 },
+  { key: 'staff', labelKey: 'nav.staff', icon: UserCog },
+  { key: 'expenses', labelKey: 'nav.expenses', icon: Receipt },
+  { key: 'reports', labelKey: 'nav.reports', icon: BarChart3 },
 ];
 
 const systemNav: NavItem[] = [
-  { key: 'settings', label: 'Settings', icon: SettingsIcon },
+  { key: 'settings', labelKey: 'nav.settings', icon: SettingsIcon },
 ];
 
 interface SidebarProps {
@@ -64,22 +66,29 @@ interface SidebarProps {
 export function Sidebar({ current, onNavigate, mobileOpen, onCloseMobile }: SidebarProps) {
   const [settings, setSettings] = useState<Settings | null>(null);
   const { theme, toggle } = useTheme();
+  const { lang, toggle: toggleLang, t } = useLanguage();
+
+  const fetchSettings = useCallback(async () => {
+    const { data } = await supabase.from('settings').select('*').limit(1).maybeSingle();
+    setSettings(data as Settings | null);
+  }, []);
 
   useEffect(() => {
-    supabase.from('settings').select('*').limit(1).maybeSingle().then(({ data }) => {
-      setSettings(data as Settings | null);
-    });
-  }, []);
+    fetchSettings();
+    const handler = () => fetchSettings();
+    window.addEventListener('settings-updated', handler);
+    return () => window.removeEventListener('settings-updated', handler);
+  }, [fetchSettings]);
 
   const handleNav = (key: PageKey) => {
     onNavigate(key);
     onCloseMobile();
   };
 
-  const renderSection = (title: string, items: NavItem[]) => (
+  const renderSection = (titleKey: string, items: NavItem[]) => (
     <div className="mb-6">
       <p className="px-3 text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--sidebar-text)' }}>
-        {title}
+        {t(titleKey as never)}
       </p>
       <nav className="flex flex-col gap-1">
         {items.map((item) => {
@@ -103,7 +112,7 @@ export function Sidebar({ current, onNavigate, mobileOpen, onCloseMobile }: Side
                 className={`w-5 h-5 transition-transform duration-200 ${isActive ? 'text-white' : 'group-hover:scale-110 group-hover:text-brand-300'}`}
                 style={!isActive ? { color: 'var(--sidebar-text)' } : undefined}
               />
-              {item.label}
+              {t(item.labelKey as never)}
             </button>
           );
         })}
@@ -138,7 +147,7 @@ export function Sidebar({ current, onNavigate, mobileOpen, onCloseMobile }: Side
                   STUDIO
                 </h2>
                 <p className="text-[11px] mt-1.5 tracking-widest uppercase" style={{ color: 'var(--sidebar-text)' }}>
-                  {settings?.tagline || 'since 1999'}
+                  {settings?.tagline || t('common.since' as never)}
                 </p>
               </div>
             </div>
@@ -154,13 +163,22 @@ export function Sidebar({ current, onNavigate, mobileOpen, onCloseMobile }: Side
 
         {/* Nav sections */}
         <div className="flex-1 overflow-y-auto px-3 py-5">
-          {renderSection('Main', mainNav)}
-          {renderSection('Management', managementNav)}
-          {renderSection('System', systemNav)}
+          {renderSection('nav.main', mainNav)}
+          {renderSection('nav.management', managementNav)}
+          {renderSection('nav.system', systemNav)}
         </div>
 
-        {/* Footer: theme toggle + user */}
+        {/* Footer: language toggle, theme toggle + user */}
         <div className="px-3 py-4 space-y-2" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
+          <button
+            onClick={toggleLang}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full hover:bg-white/8 hover:text-white"
+            style={{ color: 'var(--sidebar-text)' }}
+          >
+            <Languages className="w-5 h-5" />
+            {lang === 'en' ? 'தமிழ்' : 'English'}
+          </button>
+
           <button
             onClick={toggle}
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full hover:bg-white/8 hover:text-white"
@@ -169,12 +187,12 @@ export function Sidebar({ current, onNavigate, mobileOpen, onCloseMobile }: Side
             {theme === 'light' ? (
               <>
                 <Moon className="w-5 h-5" />
-                Dark Mode
+                {t('nav.darkMode' as never)}
               </>
             ) : (
               <>
                 <Sun className="w-5 h-5" />
-                Light Mode
+                {t('nav.lightMode' as never)}
               </>
             )}
           </button>
@@ -184,7 +202,7 @@ export function Sidebar({ current, onNavigate, mobileOpen, onCloseMobile }: Side
               OA
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white">Owner / Admin</p>
+              <p className="text-sm font-medium text-white">{t('nav.owner' as never)}</p>
               <p className="text-[11px]" style={{ color: 'var(--sidebar-text)' }}>LAKSHMI STUDIO</p>
             </div>
           </div>
@@ -193,7 +211,7 @@ export function Sidebar({ current, onNavigate, mobileOpen, onCloseMobile }: Side
             style={{ color: 'var(--sidebar-text)' }}
           >
             <LogOut className="w-5 h-5" />
-            Logout
+            {t('nav.logout' as never)}
           </button>
         </div>
       </aside>
