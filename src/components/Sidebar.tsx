@@ -140,10 +140,10 @@ export function Sidebar({ current, onNavigate, mobileOpen, onCloseMobile }: Side
             <div className="flex items-center gap-3">
               <StudioLogo src={settings?.logo_url || null} size="md" />
               <div>
-                <h1 className="font-serif text-xl font-bold text-white leading-none tracking-wide">
+                <h1 className="font-serif text-2xl font-bold text-white leading-none tracking-widest">
                   LAKSHMI
                 </h1>
-                <h2 className="font-serif text-xl font-bold text-brand-300 leading-none tracking-wide mt-0.5">
+                <h2 className="font-serif text-2xl font-bold text-brand-300 leading-none tracking-widest mt-0.5">
                   STUDIO
                 </h2>
                 <p className="text-[11px] mt-1.5 tracking-widest uppercase" style={{ color: 'var(--sidebar-text)' }}>

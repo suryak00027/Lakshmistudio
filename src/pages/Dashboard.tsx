@@ -110,7 +110,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
   return (
     <div className="space-y-6">
       <div className="animate-fade-in-up">
-        <h1 className="page-title">{greeting} <span className="inline-block">👋</span></h1>
+        <h1 className="font-serif text-3xl lg:text-4xl font-bold t-primary tracking-tight leading-tight">{greeting} <span className="inline-block">👋</span></h1>
         <p className="page-subtitle">{t('dashboard.welcome' as never)}</p>
       </div>
 
@@ -138,7 +138,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           {/* Today's Events */}
           <div className="card p-5 animate-fade-in-up stagger-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="section-title">{t('dashboard.upcomingEvents' as never)}</h2>
+              <h2 className="section-title">{t('dashboard.todayEvents' as never)}</h2>
               <button onClick={() => onNavigate('events')} className="text-sm text-accent hover:text-accent-light font-medium flex items-center gap-1 transition-colors">
                 View All <ArrowRight className="w-4 h-4" />
               </button>

@@ -55,7 +55,7 @@ export function AppLayout({ current, onNavigate, children }: AppLayoutProps) {
           <div className="flex-1 flex items-center gap-2">
             <StudioLogo src={settings?.logo_url || null} size="sm" />
             <div>
-              <span className="font-serif text-lg font-bold t-primary">LAKSHMI STUDIO</span>
+              <span className="font-serif text-xl font-bold t-primary tracking-widest">LAKSHMI STUDIO</span>
               <span className="text-xs t-muted ml-2">{settings?.tagline || 'since 1999'}</span>
             </div>
           </div>

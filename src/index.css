@@ -211,9 +211,9 @@
   .dark .badge-error { @apply bg-red-500/15 text-red-400 border-red-500/25; }
   .dark .badge-info { @apply bg-orange-500/15 text-orange-400 border-orange-500/25; }
 
-  .section-title { @apply text-lg font-semibold; color: var(--text-primary); }
-  .page-title { @apply text-2xl font-bold; color: var(--text-primary); }
-  .page-subtitle { @apply text-sm mt-0.5; color: var(--text-muted); }
+  .section-title { @apply text-xl font-bold tracking-tight; color: var(--text-primary); }
+  .page-title { @apply text-3xl lg:text-4xl font-serif font-bold tracking-tight leading-tight; color: var(--text-primary); }
+  .page-subtitle { @apply text-sm mt-1; color: var(--text-muted); }
 
   .stat-icon { @apply w-10 h-10 rounded-lg flex items-center justify-center transition-transform duration-200; }
 
